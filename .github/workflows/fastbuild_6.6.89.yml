@@ -45,6 +45,11 @@ on:
         required: true
         type: boolean
         default: 'true'
+      build_time:
+        type: string
+        description: "自定义构建时间(输入F使用当前UTC时间)"
+        required: false
+        default: "Thu Dec 11 04:17:27 UTC 2025"
       ccache_update:
         description: '更新ccache缓存(将本次编译生成的ccache缓存覆盖至仓库缓存，在更改编译配置、源码或需要刷新缓存时开启)'
         required: true
@@ -341,7 +346,30 @@ jobs:
           cd ./common
           curl -sSL https://github.com/cctv18/Baseband-guard/raw/master/setup.sh | bash
           sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' security/Kconfig
-           
+
+      - name: 自定义编译时间
+        shell: bash
+        run: |
+          INPUT_TIME="${{ github.event.inputs.build_time }}"
+          if [[ -n "$INPUT_TIME" && "$INPUT_TIME" != "F" && "$INPUT_TIME" != "f" ]]; then
+            DATESTR="$INPUT_TIME"
+            echo "Using input build_time: $DATESTR"
+          else
+            DATESTR="$(TZ='UTC' date +'%a %b %d %T %Z %Y')"
+            echo "Using UTC time as fallback: $DATESTR"
+          fi
+          cd kernel_workspace
+          for f in common/scripts/mkcompile_h $KERNEL_REPOS/scripts/mkcompile_h; do
+            if [ -f "$f" ]; then
+              echo "Patching mkcompile_h with build_time=$DATESTR"
+              if grep -q 'UTS_VERSION=' "$f"; then
+                perl -pi -e "s{UTS_VERSION=\"\\\$\\(.*?\\)\"}{UTS_VERSION=\"#1 SMP PREEMPT $DATESTR\"}" "$f"
+              else
+                perl -0777 -pi -e "s{cat <<EOF}{cat <<EOF\n#undef UTS_VERSION\n#define UTS_VERSION \"#1 SMP PREEMPT $DATESTR\" } unless /UTS_VERSION/" "$f"
+              fi
+            fi
+          done
+
       - name: 构建内核
         run: |
           WORKDIR="$(pwd)"
