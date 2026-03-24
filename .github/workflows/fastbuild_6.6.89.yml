@@ -71,7 +71,7 @@ jobs:
       actions: write
       contents: read
     steps:
-      - name: 安装环境依赖+初始化源码仓库及llvm-clang20工具链
+      - name: 安装环境依赖+初始化源码仓库及llvm-clang19工具链
         run: |
           rm -rf kernel_workspace
           mkdir kernel_workspace
@@ -94,10 +94,10 @@ jobs:
           mv "android_kernel_common_oneplus_sm8750-6.6-final" common &&
           rm -rf common.zip &
           
-          echo "正在克隆llvm-clang20工具链..." &&
-          mkdir -p clang20 &&
-          aria2c -s16 -x16 -k1M https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r547379.tar.gz -o clang.tar.gz &&
-          tar -zxf clang.tar.gz -C clang20 &&
+          echo "正在克隆llvm-clang19工具链..." &&
+          mkdir -p clang19 &&
+          aria2c -s16 -x16 -k1M https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r536225.tar.gz -o clang.tar.gz &&
+          tar -zxf clang.tar.gz -C clang19 &&
           rm -rf clang.tar.gz &
           
           echo "正在克隆构建工具..." &&
@@ -106,7 +106,7 @@ jobs:
           rm -rf build-tools.tar.gz &
           
           wait
-          echo "所有源码及llvm-clang20工具链初始化完成！"
+          echo "所有源码及llvm-clang19工具链初始化完成！"
           echo "正在去除 ABI 保护 & 去除 dirty 后缀..."
           rm common/android/abi_gki_protected_exports_* || true
           for f in common/scripts/setlocalversion; do
@@ -374,9 +374,9 @@ jobs:
         run: |
           WORKDIR="$(pwd)"
           export PATH="/usr/lib/ccache:$PATH"
-          export PATH="$WORKDIR/kernel_workspace/clang20/bin:$PATH"
+          export PATH="$WORKDIR/kernel_workspace/clang19/bin:$PATH"
           export PATH="$WORKDIR/kernel_workspace/build-tools/bin:$PATH"
-          CLANG_DIR="$WORKDIR/kernel_workspace/clang20/bin"
+          CLANG_DIR="$WORKDIR/kernel_workspace/clang19/bin"
           CLANG_VERSION="$($CLANG_DIR/clang --version | head -n 1)"
           LLD_VERSION="$($CLANG_DIR/ld.lld --version | head -n 1)"
           echo "编译器信息:"
