@@ -101,8 +101,9 @@ jobs:
           rm -rf clang.tar.gz &
           
           echo "正在克隆构建工具..." &&
+          mkdir -p build-tools &&
           aria2c -s16 -x16 -k1M https://android.googlesource.com/platform/prebuilts/build-tools/+archive/refs/heads/main.tar.gz -o build-tools.tar.gz &&
-          tar -zxf build-tools.tar.gz &&
+          tar -zxf build-tools.tar.gz -C build-tools &&
           rm -rf build-tools.tar.gz &
           
           wait
@@ -375,7 +376,7 @@ jobs:
           WORKDIR="$(pwd)"
           export PATH="/usr/lib/ccache:$PATH"
           export PATH="$WORKDIR/kernel_workspace/clang19/bin:$PATH"
-          export PATH="$WORKDIR/kernel_workspace/build-tools/bin:$PATH"
+          export PATH="$WORKDIR/kernel_workspace/build-tools/linux-x86/bin:$PATH"
           CLANG_DIR="$WORKDIR/kernel_workspace/clang19/bin"
           CLANG_VERSION="$($CLANG_DIR/clang --version | head -n 1)"
           LLD_VERSION="$($CLANG_DIR/ld.lld --version | head -n 1)"
