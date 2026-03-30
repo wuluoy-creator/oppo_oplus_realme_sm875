@@ -89,9 +89,9 @@ jobs:
           #sudo apt-get install -y --no-install-recommends curl bison flex make binutils git perl gcc python3 python-is-python3 bc libssl-dev libelf-dev zip unzip ccache
           
           echo "正在克隆源码仓库..."
-          aria2c -s16 -x16 -k1M https://github.com/wuluoy-creator/android_kernel_common_oneplus_sm8750-C16/archive/refs/heads/6.6.89-13T.zip -o common.zip && 
+          aria2c -s16 -x16 -k1M https://github.com/wuluoy-creator/android_kernel_common_oneplus_sm8750-C16/archive/refs/heads/6.6.89-13T-zram.zip -o common.zip && 
           unzip -q common.zip && 
-          mv "android_kernel_common_oneplus_sm8750-C16-6.6.89-13T" common &&
+          mv "android_kernel_common_oneplus_sm8750-C16-6.6.89-13T-zram" common &&
           rm -rf common.zip &
           
           echo "正在克隆llvm-clang18工具链..." &&
@@ -441,7 +441,7 @@ jobs:
           sudo rm -rf /opt/ghc &
           sudo rm -rf /opt/hostedtoolcache/CodeQL &
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="ccache clang" LD="ld.lld" HOSTLD=ld.lld CLANG_AUTOFDO_PROFILE="../android/gki/aarch64/afdo/kernel.afdo" O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error gki_defconfig &&
-          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="$(pwd)/cc-wrapper" LD="$(pwd)/ld-wrapper" HOSTLD=ld.lld CLANG_AUTOFDO_PROFILE="../android/gki/aarch64/afdo/kernel.afdo" O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error Image dtbs
+          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC="$(pwd)/cc-wrapper" LD="$(pwd)/ld-wrapper" HOSTLD=ld.lld CLANG_AUTOFDO_PROFILE="../android/gki/aarch64/afdo/kernel.afdo" O=out KCFLAGS+=-O2 KCFLAGS+=-Wno-error Image
           
           # 编译后时间劫持二次校验
           echo "--- 编译后环境时间: $(LD_PRELOAD=$PRELOAD_LIBS date) ---"
@@ -480,8 +480,6 @@ jobs:
           rm -rf ./AnyKernel3/.git
           cd AnyKernel3
           cp ../common/out/arch/arm64/boot/Image ./Image
-          mkdir -p dtbs
-          cp ../common/out/arch/arm64/boot/dts/**/*.dtb ./dtbs/
           if [[ ! -f ./Image ]]; then
             echo "未找到内核镜像文件，构建可能出错"
             exit 1
